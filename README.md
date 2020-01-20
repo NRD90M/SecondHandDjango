@@ -5,8 +5,8 @@
 Python 3
 
 ## 第三方库
-- [djangp][1]
-- [pillow][2]
+- [django]
+- [pillow]
 
 ## 环境配置
 ``` 
@@ -19,6 +19,9 @@ python manage.py migrate
 
 创建超级用户
 python manage.py createsuperuser
+
+启动服务
+python manage.py runserver
 ```
 
 
