@@ -5,7 +5,7 @@
 Python 3
 
 ## 注意事项
-用于注册功能需要用到QQ邮箱, 请先开通QQ邮箱的STMP功能, 然后将邮箱信息填写在[trade/utils.py](https://github.com/zstu-lly/SecondHandDjango/blob/6a69b92576dc3005e87ca6dc6d1513a3fd1c0897/trade/utils.py#L12)里面
+注册功能需要用到QQ邮箱,用于把验证码发给注册用户, 所以请先开通QQ邮箱的STMP功能, 然后将邮箱信息填写在[trade/utils.py](https://github.com/zstu-lly/SecondHandDjango/blob/6a69b92576dc3005e87ca6dc6d1513a3fd1c0897/trade/utils.py#L12)里面
 
 ## 第三方库
 - django
