@@ -14,10 +14,11 @@ Python 3
 ## 环境配置
 ``` 
 依赖包安装
-pip install django
-pip install pillow
+pip install django==3.0.2
+pip install pillow==6.2.1
 
 数据库迁移
+python manage.py makemigrations trade
 python manage.py migrate
 
 创建超级用户
