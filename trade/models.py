@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.db import models
 
 # Create your models here.
@@ -24,12 +25,21 @@ class Category(models.Model):
 
 # 发布的商品类别
 class Goods(models.Model):
-    belong_to_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='商品拥有者', related_name='所属用户')
+    belong_to_user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='商品拥有者', related_name='goods_belong')
+    labour = models.ForeignKey(User, on_delete=models.DO_NOTHING, verbose_name='服务者', related_name='goods_labour',
+                               blank=True, null=True)
     description = models.CharField(verbose_name='商品描述', max_length=100)
     display_image = models.ImageField(verbose_name='展示图片', upload_to='display_images')
     price = models.FloatField(verbose_name='价格')
     express_fee = models.FloatField(verbose_name='快递费')
-    category = models.ForeignKey(Category, verbose_name='商品类别', on_delete=models.CASCADE, default=None, blank=True)
+    category = models.ForeignKey(Category, verbose_name='商品类别', on_delete=models.CASCADE, default=None, blank=True, null=True)
+
+    is_sold = models.BooleanField(default=False, verbose_name='是否已经被拍下')
+
+    master_comment = models.CharField(max_length=100, verbose_name='主人评价', default='')
+    labour_comment = models.CharField(max_length=100, verbose_name='服务者评价', default='')
+
+
 
     def __str__(self):
         return 'pk:' + str(self.pk) + "-" + self.description + '-' + str(self.price)

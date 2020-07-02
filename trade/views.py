@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.http import HttpResponse
 import json
 from .utils import send_email
@@ -11,7 +12,7 @@ from django.conf import settings
 # Create your views here.
 def index(request):
     ret_result = {"code": 200, "msg": "请求成功", "result": []}
-    goods_list = Goods.objects.all()
+    goods_list = Goods.objects.all().filter(is_sold=False)
 
     for i, goods in enumerate(goods_list):
         obj_info = {}
@@ -66,7 +67,7 @@ def register(request):
             result = {"ret": 1, "desc": "User is already registered"}
             print("用户已经注册过了")
         else:
-            user = User.objects.create(email=email, password=password)
+            user = User.objects.create(username=email, profile="这个人很懒,没有简介", email=email, password=password)
             user.save()
             print("新用户注册成功")
             result = {"ret": 0, "desc": "Create new user successfully"}
@@ -90,7 +91,7 @@ def login(request):
         print("这个邮箱没有注册过")
     else:
         if password == user.password:
-            result = {"ret": 0, "desc": "登录成功", "username": user.username, "head_portrait": user.head_portrait.url}
+            result = {"ret": 0, "desc": "登录成功", "username": user.username, "head_portrait": 'https://cn.bing.com/images/search?q=%e5%8f%b2%e5%8a%aa%e6%af%94&id=24A7A8B8F4DB11EDE45E5B08DD820E41A0CF6F3A&FORM=IQFRBA'}# user.head_portrait.url}
             print("密码校验成功")
         else:
             result = {"ret": 1, "desc": "密码错误"}
@@ -113,6 +114,10 @@ def release_goods(request):
                 goods = Goods()
                 # 先设置一个默认的类别
                 category = Category.objects.all().first()     # 随便整一个类别
+                if not category:
+                    category = Category(name="拿外卖")
+                    category.save()
+
                 goods.description = data['desc']
                 goods.price = float(data['price'])
                 goods.belong_to_user = user
@@ -164,8 +169,8 @@ def get_goods_info(request):
 
     if goods:
         # 存在这个商品
-        user = goods.belong_to_user    # 拿出来这个用户
-        result = {"ret_code": 0, "info": {"user_head_portrait": user.head_portrait.url, "username": user.username,
+        user = goods.belong_to_user    # 拿出来这个用户user.head_portrait.url
+        result = {"ret_code": 0, "info": {"user_head_portrait": '/media/portraits/10060471_105425187390_2_J2ykXM6.jpg', "username": user.username,
                                           "email": user.email,     # 把邮箱传回去用于校验这个是不是自己发布的商品
                                           "location": "浙江杭州", "price": goods.price, "desc": goods.description,
                                           "display_image": goods.display_image.url}}
@@ -208,6 +213,39 @@ def get_released_list(request):
         result = {"ret_code": 1, "user_info": "该用户不存在"}
     return HttpResponse(json.dumps(result, ensure_ascii=False), content_type="application/json,charset=utf-8")
 
+
+def get_served_list(request):
+    # 接收两个参数，一个邮箱账号，一个验证码
+    if request.method == 'GET':
+        email = "13777893886@163.com"
+
+    else:
+        print(request.body, request.POST)
+        try:
+            data = json.loads(request.body)
+        except:
+            data = request.POST
+
+        # print("请求参数:", data)
+        email = data['email']
+
+    print("请求用户发布的商品列表:", email)
+    user = User.objects.filter(email=email).filter().first()
+    if user:
+        result = {"ret_code": 0, "user_info": "用户存在", "info": []}
+        goods_list = Goods.objects.filter(labour=user)    # 取出该用户发布的所有商品
+        for goods in goods_list:
+            goods_info = dict()
+            goods_info['imageUrl'] = goods.display_image.url
+            goods_info['desc'] = goods.description
+            goods_info['price'] = goods.price
+            goods_info['message_count'] = 0    # 留言数量
+            goods_info['browse_count'] = 0     # 浏览数量
+            goods_info['pk'] = goods.pk        # 主键
+            result['info'].append(goods_info)
+    else:
+        result = {"ret_code": 1, "user_info": "该用户不存在"}
+    return HttpResponse(json.dumps(result, ensure_ascii=False), content_type="application/json,charset=utf-8")
 
 # 接收聊天消息
 def upload_message(request):
@@ -263,6 +301,32 @@ def get_message_list(request):
             info_item["last_message"] = Message.objects.filter(belong_to_goods=goods).order_by('-create_time').first().content
             result["info"].append(info_item)
 
+    print(result)
     return HttpResponse(json.dumps(result, ensure_ascii=False), content_type="application/json,charset=utf-8")
 
 
+def give_service(request):
+    try:
+        data = json.loads(request.body)
+    except:
+        data = request.POST
+
+    # print("请求参数:", data)
+    pk = data['pk']
+    labour_id = data['labour']    # 办事的人的id
+    print("请求商品的pk:", pk)
+    goods = Goods.objects.filter(pk=pk).first()
+
+    if goods:
+        labour = User.objects.filter(username=labour_id).first()
+        if labour:
+            goods.labour = labour
+            goods.is_sold = True
+            goods.save()
+            result = {"ret_code": 0, "info": "商品拍下成功"}
+        else:
+            result = {"ret_code": 1, "info": "商品服务者不存在"}
+    else:
+        result = {"ret_code": 1, "info": "不存在这个商品"}
+
+    return HttpResponse(json.dumps(result, ensure_ascii=False), content_type="application/json,charset=utf-8")

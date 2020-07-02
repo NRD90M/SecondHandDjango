@@ -13,4 +13,6 @@ urlpatterns = [
     path('get_released_list', views.get_released_list, name='get_released_list'),
     path('upload_message', views.upload_message, name='upload_message'),
     path('get_message_list', views.get_message_list, name='get_message_list'),
+    path('give_service', views.give_service, name='give_service'),
+    path('get_served_list', views.get_served_list, name='get_served_list')
 ]
