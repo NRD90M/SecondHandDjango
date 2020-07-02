@@ -9,7 +9,7 @@ def send_email(subject, message, my_user):
 
     try:
         my_sender = '1158677160@qq.com'  # 邮件发送者
-        my_pass = 'Lly19980726.'  # 邮件发送者邮箱密码
+        my_pass = ''  # 邮件发送者邮箱密码
         msg = MIMEText(message, 'plain', 'utf-8')
         msg['From'] = formataddr(["From Server", my_sender])
         msg['To'] = formataddr(["Client", my_user])
